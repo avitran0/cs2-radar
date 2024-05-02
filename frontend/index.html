@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Radar</title>
+        <style>
+            :root {
+                --color-backdrop: #181820;
+                --color-base: #1e1e28;
+                --color-highlight: #3c3c4b;
+                --color-subtext: #c8c8dc;
+                --color-text: #ffffff;
+                --color-red: #f06464;
+                --color-orange: #f08c5a;
+                --color-yellow: #f0c878;
+                --color-green: #a0f082;
+                --color-teal: #50c8c8;
+                --color-blue: #6496f0;
+                --color-purple: #b478f0;
+
+                --font-size-xlarge: 32px;
+                --font-size-large: 28px;
+                --font-size-medium: 24px;
+                --font-size-small: 20px;
+                --font-size-xsmall: 16px;
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100dvh;
+                background-color: var(--color-base);
+            }
+
+            #radar {
+                position: relative;
+                aspect-ratio: 1 / 1;
+            }
+
+            #players-t,
+            #players-ct {
+                display: flex;
+                flex-wrap: wrap;
+            }
+
+            #players-t {
+            }
+
+            #players-ct {
+            }
+        </style>
+    </head>
+    <body>
+        <div id="players-t"></div>
+        <div id="radar"></div>
+        <div id="players-ct"></div>
+
+        <script>
+            const radar = document.getElementById("radar");
+            const playersT = document.getElementById("players-t");
+            const playersCT = document.getElementById("players-ct");
+
+            const ws = new WebSocket("ws://localhost:5173");
+        </script>
+    </body>
+</html>
