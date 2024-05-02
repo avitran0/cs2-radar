@@ -80,7 +80,6 @@ struct Offsets {
     DirectOffsets direct;
     ConvarOffsets convars;
     LibraryOffsets libraries;
-    u64 global_vars;
     PlayerControllerOffsets controller;
     PawnOffsets pawn;
     EntitySpottedStateOffsets spotted_state;

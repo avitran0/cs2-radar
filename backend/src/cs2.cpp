@@ -67,19 +67,6 @@ Offsets init(ProcessHandle* process) {
     offsets.direct.local_player =
         process->get_relative_address(local_player.value(), 0x03, 0x08);
 
-    auto global_vars = process->scan_pattern(
-        std::vector<u8>{0x48, 0x89, 0x35, 0x00, 0x00, 0x00, 0x00, 0x48, 0x89,
-                        0x46, 0x20},
-        std::vector<bool>{true, true, true, false, false, false, false, true,
-                          true, true, true},
-        offsets.libraries.client);
-    if (!global_vars.has_value()) {
-        log("failed to get global vars offset");
-        exit(1);
-    }
-    offsets.global_vars =
-        process->get_relative_address(global_vars.value(), 0x03, 0x08);
-
     auto player_address = offsets.interfaces.resource + ENTITY_OFFSET;
     offsets.interfaces.entity = process->read_u64(player_address);
     offsets.interfaces.player = offsets.interfaces.entity + 0x10;
@@ -406,14 +393,6 @@ bool is_ffa(ProcessHandle* process, const Offsets* offsets) {
            0;
 }
 
-std::string get_map_name(ProcessHandle* process, const Offsets* offsets) {
-    std::cout << std::hex << offsets->global_vars - offsets->libraries.client
-              << std::endl;
-    auto address = offsets->global_vars + 0x188;
-    auto map_name_pointer = process->read_u64(address);
-    return process->read_string(map_name_pointer);
-}
-
 Player get_player_info(ProcessHandle* process, const Offsets* offsets,
                        u64 controller) {
     Player player = {};
@@ -438,8 +417,6 @@ Player get_player_info(ProcessHandle* process, const Offsets* offsets,
 std::vector<Player> run(ProcessHandle* process, const Offsets* offsets) {
     auto local_controller = get_local_controller(process, offsets);
     auto local_player = get_player_info(process, offsets, local_controller);
-
-    std::cout << get_map_name(process, offsets) << std::endl;
 
     auto players = std::vector<Player>();
     for (size_t i = 1; i <= 64; i++) {
