@@ -309,7 +309,11 @@ i32 get_health(ProcessHandle* process, const Offsets* offsets, u64 pawn) {
 }
 
 i32 get_armor(ProcessHandle* process, const Offsets* offsets, u64 pawn) {
-    return process->read_i32(pawn + offsets->pawn.armor);
+    auto armor = process->read_i32(pawn + offsets->pawn.armor);
+    if (armor < 0 || armor > 100) {
+        return 0;
+    }
+    return armor;
 }
 
 i32 get_money(ProcessHandle* process, const Offsets* offsets, u64 controller) {
