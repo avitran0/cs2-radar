@@ -230,9 +230,15 @@
 
             let map = mapData["de_nuke"];
 
-            const ws = new WebSocket("ws://localhost:5173");
+            function startWS() {
+                const ws = new WebSocket("ws://localhost:5173");
+                ws.onmessage = wsMessage;
+                ws.onclose = () => {
+                    setTimeout(startWS, 1000);
+                };
+            }
 
-            ws.onmessage = (event) => {
+            function wsMessage(event) {
                 /** @type {{name: string, color: number, health: number, armor: number, team: number, life_state: number, weapon: string, position: {x: number, y: number, z: number}, local_player: boolean}[]} */
                 const data = JSON.parse(event.data);
 
@@ -266,7 +272,7 @@
                     const dot = getPlayerDot(player, x, y, player.team === local_player.team);
                     radar.appendChild(dot);
                 }
-            };
+            }
 
             function getPlayerElement(player) {
                 const element = document.createElement("div");
@@ -340,12 +346,13 @@
                 setMapImage(mapSelect.value);
             });
 
-            map = mapData[mapSelect.value];
-            setMapImage(mapSelect.value);
-
             function setMapImage(name) {
                 radar.style.backgroundImage = `url(radars/${name}.png)`;
             }
+
+            map = mapData[mapSelect.value];
+            setMapImage(mapSelect.value);
+            startWS();
         </script>
     </body>
 </html>
