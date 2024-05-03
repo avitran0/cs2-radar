@@ -371,7 +371,7 @@
                 const health = document.createElement("div");
                 health.className = "health";
                 const healthIcon = document.createElement("img");
-                healthIcon.src = "icons/svg/health.svg";
+                healthIcon.src = "/icons/svg/health.svg";
                 const healthText = document.createElement("span");
                 healthText.textContent = `${player.health}`;
                 health.appendChild(healthIcon);
@@ -381,7 +381,7 @@
                 const armor = document.createElement("div");
                 armor.className = "armor";
                 const armorIcon = document.createElement("img");
-                armorIcon.src = "icons/svg/armor.svg";
+                armorIcon.src = "/icons/svg/armor.svg";
                 const armorText = document.createElement("span");
                 armorText.textContent = `${player.armor}`;
                 armor.appendChild(armorIcon);
@@ -391,7 +391,7 @@
                 const money = document.createElement("div");
                 money.className = "money";
                 const moneyIcon = document.createElement("img");
-                moneyIcon.src = "icons/svg/money.svg";
+                moneyIcon.src = "/icons/svg/money.svg";
                 const moneyText = document.createElement("span");
                 moneyText.textContent = `${player.money}`;
                 money.appendChild(moneyIcon);
@@ -410,7 +410,7 @@
                 if (player.weapon === "") {
                     player.weapon = "unknown";
                 }
-                weapon.src = `icons/svg/${player.weapon}.svg`;
+                weapon.src = `/icons/svg/${player.weapon}.svg`;
                 element.appendChild(weapon);
 
                 element.style.borderColor = Colors[player.color] ?? "var(--color-text)";
@@ -441,7 +441,7 @@
             });
 
             function setMapImage(name) {
-                radar.style.backgroundImage = `url(radars/${name}.png)`;
+                radar.style.backgroundImage = `url(/radars/${name}.png)`;
             }
 
             map = mapData[mapSelect.value];
