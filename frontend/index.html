@@ -4,6 +4,7 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Radar</title>
+        <link rel="shortcut icon" href="favicon.png" type="image/x-icon" />
         <style>
             :root {
                 --color-backdrop: #181820;
@@ -24,6 +25,8 @@
                 --font-size-medium: 24px;
                 --font-size-small: 20px;
                 --font-size-xsmall: 16px;
+
+                --transition: all 0.15s cubic-bezier(0.65, 0, 0.35, 1);
             }
 
             * {
@@ -34,41 +37,315 @@
                 margin: 0;
                 padding: 0;
                 display: flex;
-                justify-content: center;
+                flex-direction: column;
                 align-items: center;
                 min-height: 100dvh;
+                width: 100dvw;
                 background-color: var(--color-base);
+                gap: 1rem;
+            }
+
+            select {
+                background-color: var(--color-highlight);
+                color: var(--color-text);
+                border: 2px solid var(--color-text);
+                padding: 0.2rem 0.5rem;
+                font-size: var(--font-size-medium);
+                border-radius: 0.5rem;
+                cursor: pointer;
+                transition: var(--transition);
+            }
+
+            select:hover {
+                border-color: var(--color-blue);
+            }
+
+            #control {
+                margin-top: 1rem;
+            }
+
+            #data {
+                width: 100%;
+                display: flex;
+                justify-content: space-evenly;
             }
 
             #radar {
                 position: relative;
                 aspect-ratio: 1 / 1;
+                max-height: 85dvh;
+                width: 85dvh;
+                background-size: cover;
             }
 
-            #players-t,
-            #players-ct {
+            .players {
                 display: flex;
                 flex-wrap: wrap;
+                flex-direction: column;
+                width: 24rem;
+                gap: 1rem;
             }
 
-            #players-t {
+            .player {
+                width: 100%;
+                height: 8rem;
+                padding: 1rem;
+                font-size: var(--font-size-medium);
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
             }
 
-            #players-ct {
+            .data {
+                display: flex;
+                gap: 0.75rem;
+            }
+
+            .health,
+            .armor,
+            .money {
+                display: flex;
+                gap: 0.1rem;
+            }
+
+            .health {
+                color: var(--color-green);
+            }
+
+            .armor {
+                color: var(--color-teal);
+            }
+
+            .money {
+                color: var(--color-yellow);
+            }
+
+            .weapon {
+                height: 2.4rem;
+            }
+
+            .dot {
+                position: absolute;
+                width: 1.5%;
+                height: 1.5%;
+                border-radius: 50%;
+                transform: translate(-50%, -50%);
             }
         </style>
     </head>
     <body>
-        <div id="players-t"></div>
-        <div id="radar"></div>
-        <div id="players-ct"></div>
+        <div id="control">
+            <select id="map-select">
+                <option value="de_ancient">Ancient</option>
+                <option value="de_dust2">Dust 2</option>
+                <option value="de_inferno">Inferno</option>
+                <option value="de_mirage">Mirage</option>
+                <option value="de_nuke">Nuke</option>
+                <option value="de_overpass">Overpass</option>
+                <option value="de_vertigo">Vertigo</option>
+            </select>
+        </div>
+        <div id="data">
+            <div id="players-t" class="players"></div>
+            <div id="radar"></div>
+            <div id="players-ct" class="players"></div>
+        </div>
 
         <script>
             const radar = document.getElementById("radar");
             const playersT = document.getElementById("players-t");
             const playersCT = document.getElementById("players-ct");
+            const mapSelect = document.getElementById("map-select");
+
+            const Teams = {
+                None: 0,
+                Spectator: 1,
+                T: 2,
+                CT: 3,
+            };
+
+            const Colors = {
+                0: "var(--color-blue)",
+                1: "var(--color-green)",
+                2: "var(--color-yellow)",
+                3: "var(--color-orange)",
+                4: "var(--color-purple)",
+                5: "var(--color-text)",
+            };
+
+            /** @type {Map<string, {x: number, y: number, scale: number, rotate: boolean, zoom: number, lowerThreshold?: number}>} */
+            const mapData = {
+                de_ancient: {
+                    x: -2953,
+                    y: 2164,
+                    scale: 5,
+                    rotate: false,
+                    zoom: 1,
+                },
+                de_dust2: {
+                    x: -2476,
+                    y: 3239,
+                    scale: 4.4,
+                    rotate: true,
+                    zoom: 1.1,
+                },
+                de_inferno: {
+                    x: -2087,
+                    y: 3870,
+                    scale: 4.9,
+                    rotate: false,
+                    zoom: 1,
+                },
+                de_mirage: {
+                    x: -3230,
+                    y: 1713,
+                    scale: 5,
+                    rotate: false,
+                    zoom: 1,
+                },
+                de_nuke: {
+                    x: -3453,
+                    y: 2887,
+                    scale: 7,
+                    rotate: false,
+                    zoom: 1,
+                    lowerThreshold: -495,
+                },
+                de_overpass: {
+                    x: -4831,
+                    y: 1781,
+                    scale: 5.2,
+                    rotate: false,
+                    zoom: 1,
+                },
+                de_vertigo: {
+                    x: -3168,
+                    y: 1762,
+                    scale: 4,
+                    rotate: false,
+                    zoom: 1,
+                    lowerThreshold: 11700,
+                },
+            };
+
+            let map = mapData["de_nuke"];
 
             const ws = new WebSocket("ws://localhost:5173");
+
+            ws.onmessage = (event) => {
+                /** @type {{name: string, color: number, health: number, armor: number, team: number, life_state: number, weapon: string, position: {x: number, y: number, z: number}, local_player: boolean}[]} */
+                const data = JSON.parse(event.data);
+
+                playersT.innerHTML = "";
+                playersCT.innerHTML = "";
+                radar.innerHTML = "";
+                if (data.length === 0) {
+                    return;
+                }
+                const local_player = data.find((player) => player.local_player);
+                // switch to lower radar threshold if player is below it
+                if (map.lowerThreshold && local_player.position.z < map.lowerThreshold) {
+                    setMapImage(mapSelect.value + "_lower");
+                } else {
+                    setMapImage(mapSelect.value);
+                }
+
+                for (const player of data) {
+                    const element = getPlayerElement(player);
+                    if (player.team === Teams.T) {
+                        playersT.appendChild(element);
+                    } else if (player.team === Teams.CT) {
+                        playersCT.appendChild(element);
+                    }
+
+                    const cx = radar.clientWidth;
+                    const cy = radar.clientHeight;
+                    const x = ((player.position.x - map.x) / map.scale) * (cx / 1024);
+                    const y = -((player.position.y - map.y) / map.scale) * (cy / 1024);
+
+                    const dot = getPlayerDot(player, x, y, player.team === local_player.team);
+                    radar.appendChild(dot);
+                }
+            };
+
+            function getPlayerElement(player) {
+                const element = document.createElement("div");
+                element.className = "player";
+
+                const data = document.createElement("div");
+                data.className = "data";
+
+                const name = document.createElement("span");
+                name.textContent = player.name;
+                data.appendChild(name);
+
+                const health = document.createElement("div");
+                health.className = "health";
+                const healthIcon = document.createElement("img");
+                healthIcon.src = "icons/svg/health.svg";
+                const healthText = document.createElement("span");
+                healthText.textContent = `${player.health}`;
+                health.appendChild(healthIcon);
+                health.appendChild(healthText);
+                data.appendChild(health);
+
+                const armor = document.createElement("div");
+                armor.className = "armor";
+                const armorIcon = document.createElement("img");
+                armorIcon.src = "icons/svg/armor.svg";
+                const armorText = document.createElement("span");
+                armorText.textContent = `${player.armor}`;
+                armor.appendChild(armorIcon);
+                armor.appendChild(armorText);
+                data.appendChild(armor);
+
+                const money = document.createElement("div");
+                money.className = "money";
+                const moneyIcon = document.createElement("img");
+                moneyIcon.src = "icons/svg/money.svg";
+                const moneyText = document.createElement("span");
+                moneyText.textContent = `${player.money}`;
+                money.appendChild(moneyIcon);
+                money.appendChild(moneyText);
+                data.appendChild(money);
+
+                element.appendChild(data);
+
+                // add svg for weapon
+                const weapon = document.createElement("img");
+                weapon.className = "weapon";
+                weapon.src = `icons/svg/${player.weapon}.svg`;
+                element.appendChild(weapon);
+
+                element.style.color = player.team === Teams.T ? "var(--color-orange)" : "var(--color-blue)";
+                return element;
+            }
+
+            function getPlayerDot(player, x, y, friendly) {
+                const dot = document.createElement("div");
+                dot.className = "dot";
+                let color;
+                if (friendly) {
+                    dot.style.backgroundColor = Colors[player.color] ?? "var(--color-text)";
+                } else {
+                    dot.style.backgroundColor = "var(--color-red)";
+                }
+                dot.style.left = `${x}px`;
+                dot.style.top = `${y}px`;
+                return dot;
+            }
+
+            mapSelect.addEventListener("change", () => {
+                map = mapData[mapSelect.value];
+                setMapImage(mapSelect.value);
+            });
+
+            map = mapData[mapSelect.value];
+            setMapImage(mapSelect.value);
+
+            function setMapImage(name) {
+                radar.style.backgroundImage = `url(radars/${name}.png)`;
+            }
         </script>
     </body>
 </html>

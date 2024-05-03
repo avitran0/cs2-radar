@@ -410,6 +410,7 @@ Player get_player_info(ProcessHandle* process, const Offsets* offsets,
     player.weapon = get_weapon(process, offsets, pawn);
     player.color = get_color(process, offsets, controller);
     player.position = get_position(process, offsets, pawn);
+    player.local_player = false;
 
     return player;
 }
@@ -426,8 +427,14 @@ std::vector<Player> run(ProcessHandle* process, const Offsets* offsets) {
         }
 
         auto player = get_player_info(process, offsets, controller);
+        if (player.team != TEAM_T && player.team != TEAM_CT) {
+            continue;
+        }
         players.push_back(player);
     }
-    players.push_back(local_player);
+    if (local_player.team == TEAM_T || local_player.team == TEAM_CT) {
+        local_player.local_player = true;
+        players.push_back(local_player);
+    }
     return players;
 }

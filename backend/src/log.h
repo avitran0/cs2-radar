@@ -2,5 +2,6 @@
 #define CS2_RADAR_LOG
 
 void log(const char* message, ...);
+void log_error(const char* message, ...);
 
 #endif

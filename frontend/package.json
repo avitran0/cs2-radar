@@ -11,6 +11,7 @@
     "author": "avitrano",
     "license": "MIT",
     "dependencies": {
-        "express": "^4.19.2"
+        "express": "^4.19.2",
+        "ws": "^8.17.0"
     }
 }

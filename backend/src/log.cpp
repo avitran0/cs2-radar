@@ -12,3 +12,12 @@ void log(const char* message, ...) {
     printf("\n");
     fflush(stdout);
 }
+
+void log_error(const char* message, ...) {
+    va_list args;
+    va_start(args, message);
+    vfprintf(stderr, message, args);
+    va_end(args);
+    fprintf(stderr, "\n");
+    fflush(stderr);
+}

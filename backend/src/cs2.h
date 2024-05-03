@@ -15,6 +15,13 @@ Colors:
 5+: White
 */
 
+enum Team {
+    TEAM_NONE = 0,
+    TEAM_SPECTATOR = 1,
+    TEAM_T = 2,
+    TEAM_CT = 3,
+};
+
 struct InterfaceOffsets {
     u64 resource;
     u64 entity;
@@ -98,6 +105,7 @@ struct Player {
     std::string weapon;
     i32 color;
     Vec3 position;
+    bool local_player;
 };
 
 Offsets init(ProcessHandle* process);

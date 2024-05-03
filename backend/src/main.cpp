@@ -28,14 +28,17 @@ std::string player_to_string(Player player) {
         "\"color\": %d,"
         "\"health\": %d,"
         "\"armor\": %d,"
+        "\"money\": %d,"
         "\"team\": %d,"
         "\"life_state\": %d,"
         "\"weapon\": \"%s\","
-        "\"position\": {\"x\": %f, \"y\": %f, \"z\": %f}"
+        "\"position\": {\"x\": %f, \"y\": %f, \"z\": %f},"
+        "\"local_player\": %d"
         "}",
         player.name.c_str(), player.color, player.health, player.armor,
-        player.team, player.life_state, player.weapon.c_str(),
-        player.position.x, player.position.y, player.position.z);
+        player.money, player.team, player.life_state, player.weapon.c_str(),
+        player.position.x, player.position.y, player.position.z,
+        player.local_player);
 }
 
 std::string serialize_players(std::vector<Player> players) {
@@ -55,7 +58,7 @@ int main() {
         log("Waiting for %s to start...", PROCESS_NAME);
         sleep(1);
     }
-    std::cout << "pid: " << get_pid(PROCESS_NAME).value() << "\n";
+    log("pid: %d", get_pid(PROCESS_NAME).value());
     while (!open_process(PROCESS_NAME).has_value()) {
         log("Waiting for %s to start...", PROCESS_NAME);
         sleep(1);
@@ -73,14 +76,15 @@ int main() {
         auto players = run(&process, &offsets);
         auto players_str = serialize_players(players);
 
-        //std::cerr << players_str << std::endl;
+        log_error("%s", players_str.c_str());
 
         // write to file
         /*std::ofstream file("players.json");
         file << players_str;
         file.close();*/
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(
+            std::chrono::milliseconds(REFRESH_INTERVAL));
     }
 
     return 0;

@@ -1,6 +1,9 @@
 #ifndef CS2_RADAR_CONFIG
 #define CS2_RADAR_CONFIG
 
+#define REFRESH_RATE 20
+#define REFRESH_INTERVAL 1000 / REFRESH_RATE
+
 #define PROCESS_NAME "cs2"
 #define CLIENT_LIB "libclient.so"
 #define ENGINE_LIB "libengine2.so"
