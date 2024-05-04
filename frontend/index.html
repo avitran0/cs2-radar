@@ -83,6 +83,7 @@
                 cursor: pointer;
                 transition: var(--transition);
                 font-family: var(--font);
+                height: 2.8rem;
             }
 
             select:hover {
@@ -100,6 +101,8 @@
 
             #control {
                 margin-top: 1rem;
+                display: flex;
+                gap: 1rem;
             }
 
             #data {
@@ -184,6 +187,14 @@
                 height: 1.5%;
                 border-radius: 50%;
                 transform: translate(-50%, -50%);
+                box-shadow: 0 0 0.5rem 0.1rem rgba(0, 0, 0, 0.5);
+            }
+
+            #indicator {
+                width: 6rem;
+                height: 2.8rem;
+                border: 2px solid var(--color-text);
+                border-radius: 0.5rem;
             }
 
             @media (max-width: 82rem) {
@@ -220,6 +231,7 @@
                 <option value="de_overpass">Overpass</option>
                 <option value="de_vertigo">Vertigo</option>
             </select>
+            <div id="indicator"></div>
         </div>
         <div id="data">
             <div id="t-container">
@@ -238,6 +250,7 @@
             const playersT = document.getElementById("players-t");
             const playersCT = document.getElementById("players-ct");
             const mapSelect = document.getElementById("map-select");
+            const indicator = document.getElementById("indicator");
 
             const Teams = {
                 None: 0,
@@ -318,10 +331,12 @@
                 ws.onmessage = wsMessage;
                 ws.onclose = () => {
                     setTimeout(startWS, 1000);
+                    indicator.style.backgroundColor = "var(--color-red)";
                 };
             }
 
             function wsMessage(event) {
+                indicator.style.backgroundColor = "var(--color-green)";
                 /** @type {{name: string, color: number, health: number, armor: number, team: number, life_state: number, weapon: string, position: {x: number, y: number, z: number}, local_player: boolean}[]} */
                 const data = JSON.parse(event.data);
 
@@ -347,6 +362,9 @@
                         playersCT.appendChild(element);
                     }
 
+                    if (player.life_state !== 0) {
+                        continue;
+                    }
                     const cx = radar.clientWidth;
                     const cy = radar.clientHeight;
                     const x = ((player.position.x - map.x) / map.scale) * (cx / 1024);
