@@ -264,6 +264,18 @@ Offsets init(ProcessHandle* process) {
             }
             auto offset = *(i32*)(entry + 0x08);
             offsets.pawn.position = offset;
+        } else if (!strcmp(name, "m_pObserverServices")) {
+            if (offsets.pawn.observer_services != 0) {
+                continue;
+            }
+            auto offset = *(i32*)(entry + 0x08);
+            offsets.pawn.observer_services = offset;
+        } else if (!strcmp(name, "m_hObserverTarget")) {
+            if (offsets.observer_services.target != 0) {
+                continue;
+            }
+            auto offset = *(i32*)(entry + 0x08);
+            offsets.observer_services.target = offset;
         }
     }
 
@@ -392,6 +404,28 @@ Vec3 get_position(ProcessHandle* process, const Offsets* offsets, u64 pawn) {
     };
 }
 
+u64 get_spectator_target(ProcessHandle* process, const Offsets* offsets,
+                         u64 pawn) {
+    auto observer_services =
+        process->read_u64(pawn + offsets->pawn.observer_services);
+    if (observer_services == 0) {
+        return 0;
+    }
+    auto target = process->read_u32(observer_services +
+                                    offsets->observer_services.target) &
+                  0x7FFF;
+    if (target == 0) {
+        return 0;
+    }
+
+    auto v2 = process->read_u64(offsets->interfaces.player + 8 * (target >> 9));
+    if (v2 == 0) {
+        return 0;
+    }
+
+    return process->read_u64(v2 + 120 * (target & 0x1FF));
+}
+
 bool is_ffa(ProcessHandle* process, const Offsets* offsets) {
     return process->read_i32(offsets->convars.teammates_are_enemies + 0x40) !=
            0;
@@ -421,7 +455,9 @@ Player get_player_info(ProcessHandle* process, const Offsets* offsets,
 
 std::vector<Player> run(ProcessHandle* process, const Offsets* offsets) {
     auto local_controller = get_local_controller(process, offsets);
+    auto local_pawn = get_pawn(process, offsets, local_controller);
     auto local_player = get_player_info(process, offsets, local_controller);
+    auto spectator_target = get_spectator_target(process, offsets, local_pawn);
 
     auto players = std::vector<Player>();
     for (size_t i = 1; i <= 64; i++) {
@@ -430,9 +466,14 @@ std::vector<Player> run(ProcessHandle* process, const Offsets* offsets) {
             continue;
         }
 
+        auto pawn = get_pawn(process, offsets, controller);
+
         auto player = get_player_info(process, offsets, controller);
         if (player.team != TEAM_T && player.team != TEAM_CT) {
             continue;
+        }
+        if (spectator_target == pawn) {
+            player.local_player = true;
         }
         players.push_back(player);
     }

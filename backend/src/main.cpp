@@ -54,37 +54,41 @@ std::string serialize_players(std::vector<Player> players) {
 }
 
 int main() {
-    while (!get_pid(PROCESS_NAME).has_value()) {
-        log("Waiting for %s to start...", PROCESS_NAME);
-        sleep(1);
-    }
-    log("pid: %d", get_pid(PROCESS_NAME).value());
-    while (!open_process(PROCESS_NAME).has_value()) {
-        log("Waiting for %s to start...", PROCESS_NAME);
-        sleep(1);
-    }
-    auto process = open_process(PROCESS_NAME).value();
-    auto offsets = init(&process);
-
-    log("game started");
-
     while (true) {
-        if (!validate_pid(process.pid)) {
-            log("game closed");
-            break;
+        if (!get_pid(PROCESS_NAME).has_value()) {
+            log("Waiting for %s to start...", PROCESS_NAME);
+            sleep(1);
+            continue;
         }
-        auto players = run(&process, &offsets);
-        auto players_str = serialize_players(players);
+        log("pid: %d", get_pid(PROCESS_NAME).value());
+        if (!open_process(PROCESS_NAME).has_value()) {
+            log("Waiting for %s to start...", PROCESS_NAME);
+            sleep(1);
+            continue;
+        }
+        auto process = open_process(PROCESS_NAME).value();
+        auto offsets = init(&process);
 
-        log_error("%s", players_str.c_str());
+        log("game started");
 
-        // write to file
-        /*std::ofstream file("players.json");
-        file << players_str;
-        file.close();*/
+        while (true) {
+            if (!validate_pid(process.pid)) {
+                log("game closed");
+                break;
+            }
+            auto players = run(&process, &offsets);
+            auto players_str = serialize_players(players);
 
-        std::this_thread::sleep_for(
-            std::chrono::milliseconds(REFRESH_INTERVAL));
+            log_error("%s", players_str.c_str());
+
+            // write to file
+            /*std::ofstream file("players.json");
+            file << players_str;
+            file.close();*/
+
+            std::this_thread::sleep_for(
+                std::chrono::milliseconds(REFRESH_INTERVAL));
+        }
     }
 
     return 0;

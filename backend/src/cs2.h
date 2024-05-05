@@ -52,16 +52,17 @@ struct PlayerControllerOffsets {
 };
 
 struct PawnOffsets {
-    u64 health;           // i32 m_iHealth
-    u64 armor;            // i32 m_ArmorValue
-    u64 team;             // u8 m_iTeamNum
-    u64 life_state;       // u8 m_lifeState
-    u64 weapon;           // pointer m_pClippingWeapon
-    u64 render_color;     // 3 x u8 m_clrRender
-    u64 spotted_state;    // pointer m_entitySpottedState
-    u64 bullet_services;  // pointer m_pBulletServices
-    u64 weapon_services;  // pointer m_pWeaponServices
-    u32 position;         // Vec3 m_vOldOrigin
+    u64 health;             // i32 m_iHealth
+    u64 armor;              // i32 m_ArmorValue
+    u64 team;               // u8 m_iTeamNum
+    u64 life_state;         // u8 m_lifeState
+    u64 weapon;             // pointer m_pClippingWeapon
+    u64 render_color;       // 3 x u8 m_clrRender
+    u64 spotted_state;      // pointer m_entitySpottedState
+    u64 bullet_services;    // pointer m_pBulletServices
+    u64 weapon_services;    // pointer m_pWeaponServices
+    u64 position;           // Vec3 m_vOldOrigin
+    u64 observer_services;  // pointer m_pObserverServices
 };
 
 struct EntitySpottedStateOffsets {
@@ -82,6 +83,10 @@ struct WeaponServicesOffsets {
     u64 active_weapon;  // pointer m_hActiveWeapon
 };
 
+struct ObserverServicesOffsets {
+    u64 target;  // pointer m_hObserverTarget
+};
+
 struct Offsets {
     InterfaceOffsets interfaces;
     DirectOffsets direct;
@@ -93,6 +98,7 @@ struct Offsets {
     MoneyServicesOffsets money_services;
     BulletServicesOffsets bullet_services;
     WeaponServicesOffsets weapon_services;
+    ObserverServicesOffsets observer_services;
 };
 
 struct Player {

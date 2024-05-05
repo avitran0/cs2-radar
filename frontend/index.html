@@ -323,6 +323,11 @@
                 },
             };
 
+            const MapLayers = {
+                Default: 0,
+                Lower: 1,
+            };
+
             let map = mapData["de_nuke"];
 
             function startWS() {
@@ -347,9 +352,11 @@
                     return;
                 }
                 const local_player = data.find((player) => player.local_player);
+                let local_player_layer = MapLayers.Default;
                 // switch to lower radar threshold if player is below it
                 if (map.lowerThreshold && local_player.position.z < map.lowerThreshold) {
                     setMapImage(mapSelect.value + "_lower");
+                    local_player_layer = MapLayers.Lower;
                 } else {
                     setMapImage(mapSelect.value);
                 }
@@ -371,6 +378,12 @@
                     const y = -((player.position.y - map.y) / map.scale) * (cy / 1024);
 
                     const dot = getPlayerDot(player, x, y, player.team === local_player.team);
+
+                    const player_layer = player.position.z < map.lowerThreshold ? MapLayers.Lower : MapLayers.Default;
+                    if (player_layer !== local_player_layer) {
+                        dot.style.opacity = "0.5";
+                    }
+
                     radar.appendChild(dot);
                 }
             }
