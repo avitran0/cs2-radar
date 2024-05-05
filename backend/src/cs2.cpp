@@ -477,8 +477,10 @@ std::vector<Player> run(ProcessHandle* process, const Offsets* offsets) {
         }
         players.push_back(player);
     }
-    if (local_player.team == TEAM_T || local_player.team == TEAM_CT) {
+    if (!spectator_target) {
         local_player.local_player = true;
+    }
+    if (local_player.team == TEAM_T || local_player.team == TEAM_CT) {
         players.push_back(local_player);
     }
     return players;
