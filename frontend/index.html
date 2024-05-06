@@ -254,6 +254,12 @@
                 <option value="de_overpass">Overpass</option>
                 <option value="de_vertigo">Vertigo</option>
             </select>
+            <select id="radar-type-select">
+                <option value="clean">Clean</option>
+                <option value="callouts">Callouts</option>
+                <option value="elevations">Elevations</option>
+                <option value="both">Both</option>
+            </select>
             <div id="indicator">WebSocket</div>
         </div>
         <div id="data">
@@ -277,6 +283,7 @@
             const mapSelect = document.getElementById("map-select");
             const indicator = document.getElementById("indicator");
             const activate = document.getElementById("activate");
+            const radarTypeSelect = document.getElementById("radar-type-select");
 
             let active = false;
 
@@ -372,7 +379,15 @@
                 Lower: 1,
             };
 
+            const RadarTypes = {
+                Clean: "clean",
+                Callouts: "callouts",
+                Elevations: "elevations",
+                Both: "both",
+            };
+
             let map = mapData["de_nuke"];
+            let radarType = RadarTypes.Callouts;
 
             function startWS() {
                 const url = window.location.href.replace("http://", "ws://");
@@ -387,22 +402,28 @@
             function wsMessage(event) {
                 indicator.style.backgroundColor = "var(--color-green)";
                 /** @type {{name: string, color: number, health: number, armor: number, team: number, life_state: number, weapon: string, position: {x: number, y: number, z: number}, local_player: boolean}[]} */
-                const data = JSON.parse(event.data);
+                // try to parse the data
+                let data;
+                try {
+                    data = JSON.parse(event.data);
+                } catch (e) {
+                    return;
+                }
 
                 playersT.innerHTML = "";
                 playersCT.innerHTML = "";
                 radar.innerHTML = "";
-                if (data.length === 0) {
+                if (data.length === 0 || !active) {
                     return;
                 }
                 const local_player = data.find((player) => player.local_player);
                 let local_player_layer = MapLayers.Default;
                 // switch to lower radar threshold if player is below it
                 if (map.lowerThreshold && local_player.position.z < map.lowerThreshold) {
-                    setMapImage(mapSelect.value + "_lower");
+                    setMapImage(getRadarName() + "_lower");
                     local_player_layer = MapLayers.Lower;
                 } else {
-                    setMapImage(mapSelect.value);
+                    setMapImage(getRadarName());
                 }
 
                 for (const player of data) {
@@ -512,15 +533,25 @@
 
             mapSelect.addEventListener("change", () => {
                 map = mapData[mapSelect.value];
-                setMapImage(mapSelect.value);
+                setMapImage(getRadarName());
+            });
+
+            radarTypeSelect.addEventListener("change", () => {
+                radarType = radarTypeSelect.value;
+                setMapImage(getRadarName());
             });
 
             function setMapImage(name) {
                 radar.style.backgroundImage = `url(/radars/${name}.png)`;
             }
 
+            function getRadarName() {
+                return `${radarType}/${mapSelect.value}`;
+            }
+
             map = mapData[mapSelect.value];
-            setMapImage(mapSelect.value);
+            radarType = radarTypeSelect.value;
+            setMapImage(getRadarName());
             startWS();
         </script>
     </body>
