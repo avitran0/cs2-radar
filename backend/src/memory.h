@@ -54,6 +54,8 @@ class ProcessHandle {
     std::optional<u64> get_interface_offset(u64 lib_address,
                                             std::string interface_name);
     std::optional<u64> get_convar(u64 convar_offset, std::string convar_name);
+
+    void discard();
 };
 
 std::optional<int> get_pid(std::string process_name);

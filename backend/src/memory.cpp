@@ -383,6 +383,10 @@ std::optional<u64> ProcessHandle::get_convar(u64 convar_offset,
     return std::nullopt;
 }
 
+void ProcessHandle::discard() {
+    close(memory);
+}
+
 i8 read_i8_from_vector(u8* bytes, u64 address) {
     return *(i8*)(bytes + address);
 }

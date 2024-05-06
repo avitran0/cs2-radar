@@ -114,7 +114,7 @@ struct Player {
     bool local_player;
 };
 
-Offsets init(ProcessHandle* process);
+std::optional<Offsets> init(ProcessHandle* process);
 std::vector<Player> run(ProcessHandle* process, const Offsets* offsets);
 
 #endif

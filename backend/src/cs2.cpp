@@ -9,7 +9,7 @@
 #include "log.h"
 #include "math.h"
 
-Offsets init(ProcessHandle* process) {
+std::optional<Offsets> init(ProcessHandle* process) {
     Offsets offsets = {};
 
     // get client lib base address
@@ -19,15 +19,15 @@ Offsets init(ProcessHandle* process) {
 
     if (!client_address.has_value()) {
         log("failed to get %s base address", CLIENT_LIB);
-        exit(1);
+        return std::nullopt;
     }
     if (!engine_address.has_value()) {
         log("failed to get %s base address", ENGINE_LIB);
-        exit(1);
+        return std::nullopt;
     }
     if (!tier0_address.has_value()) {
         log("failed to get %s base address", TIER0_LIB);
-        exit(1);
+        std::nullopt;
     }
 
     offsets.libraries.client = client_address.value();
@@ -38,7 +38,7 @@ Offsets init(ProcessHandle* process) {
         offsets.libraries.engine, "GameResourceServiceClientV0");
     if (!resource_offset.has_value()) {
         log("failed to get resource offset");
-        exit(1);
+        return std::nullopt;
     }
     offsets.interfaces.resource = resource_offset.value();
 
@@ -62,7 +62,7 @@ Offsets init(ProcessHandle* process) {
         offsets.libraries.client);
     if (!local_player.has_value()) {
         log("failed to get local player offset");
-        exit(1);
+        return std::nullopt;
     }
     offsets.direct.local_player =
         process->get_relative_address(local_player.value(), 0x03, 0x08);
@@ -74,7 +74,7 @@ Offsets init(ProcessHandle* process) {
         process->get_interface_offset(offsets.libraries.tier0, "VEngineCvar0");
     if (!cvar_offset.has_value()) {
         log("failed to get cvar offset");
-        exit(1);
+        return std::nullopt;
     }
     offsets.interfaces.cvar = cvar_offset.value();
 

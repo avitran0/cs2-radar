@@ -67,13 +67,20 @@ int main() {
             continue;
         }
         auto process = open_process(PROCESS_NAME).value();
-        auto offsets = init(&process);
+        auto offsets_opt = init(&process);
+        if (!offsets_opt.has_value()) {
+            log("Failed to initialize offsets");
+            process.discard();
+            continue;
+        }
+        auto offsets = offsets_opt.value();
 
         log("game started");
 
         while (true) {
             if (!validate_pid(process.pid)) {
                 log("game closed");
+                process.discard();
                 break;
             }
             auto players = run(&process, &offsets);
