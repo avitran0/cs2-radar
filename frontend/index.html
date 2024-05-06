@@ -105,6 +105,35 @@
                 gap: 1rem;
             }
 
+            #activate {
+                width: 2.8rem;
+                height: 2.8rem;
+                background-color: var(--color-highlight);
+                border: 2px solid var(--color-text);
+                border-radius: 0.5rem;
+                cursor: pointer;
+                transition: var(--transition);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            #activate:hover {
+                border-color: var(--color-blue);
+            }
+
+            #indicator {
+                height: 2.8rem;
+                border: 2px solid var(--color-text);
+                border-radius: 0.5rem;
+                padding: 0.2rem 0.5rem;
+                font-size: var(--font-size-medium);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                color: var(--color-base);
+            }
+
             #data {
                 width: 100%;
                 display: flex;
@@ -190,13 +219,6 @@
                 box-shadow: 0 0 0.5rem 0.1rem rgba(0, 0, 0, 0.5);
             }
 
-            #indicator {
-                width: 6rem;
-                height: 2.8rem;
-                border: 2px solid var(--color-text);
-                border-radius: 0.5rem;
-            }
-
             @media (max-width: 82rem) {
                 #data {
                     display: grid;
@@ -222,6 +244,7 @@
     </head>
     <body>
         <div id="control">
+            <button id="activate"></button>
             <select id="map-select">
                 <option value="de_ancient">Ancient</option>
                 <option value="de_dust2">Dust 2</option>
@@ -231,7 +254,7 @@
                 <option value="de_overpass">Overpass</option>
                 <option value="de_vertigo">Vertigo</option>
             </select>
-            <div id="indicator"></div>
+            <div id="indicator">WebSocket</div>
         </div>
         <div id="data">
             <div id="t-container">
@@ -249,8 +272,29 @@
             const radar = document.getElementById("radar");
             const playersT = document.getElementById("players-t");
             const playersCT = document.getElementById("players-ct");
+            const tContainer = document.getElementById("t-container");
+            const ctContainer = document.getElementById("ct-container");
             const mapSelect = document.getElementById("map-select");
             const indicator = document.getElementById("indicator");
+            const activate = document.getElementById("activate");
+
+            let active = false;
+
+            activate.addEventListener("click", () => {
+                if (active) {
+                    tContainer.style.visibility = "hidden";
+                    ctContainer.style.visibility = "hidden";
+                    activate.style.backgroundColor = "var(--color-red)";
+                    active = false;
+                } else {
+                    tContainer.style.visibility = "visible";
+                    ctContainer.style.visibility = "visible";
+                    activate.style.backgroundColor = "var(--color-green)";
+                    active = true;
+                }
+            });
+
+            activate.click();
 
             const Teams = {
                 None: 0,
