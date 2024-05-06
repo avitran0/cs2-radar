@@ -26,11 +26,11 @@ const radar = spawn("./static/cs2-radar");
 
 // data is a Buffer
 radar.stdout.on("data", (data) => {
-    console.info(`stdout: ${data}`);
+    //console.info(`stdout: ${data}`);
 });
 
 radar.stderr.on("data", (data) => {
-    console.error(`stderr: ${data}`);
+    //console.error(`stderr: ${data}`);
     const str = data.toString();
     ws.clients.forEach((client) => {
         if (client.readyState === 1) {
