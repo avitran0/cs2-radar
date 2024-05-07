@@ -2,9 +2,6 @@
 
 #include <string.h>
 
-#include <bitset>
-#include <iostream>
-
 #include "config.h"
 #include "log.h"
 #include "math.h"
@@ -27,7 +24,7 @@ std::optional<Offsets> init(ProcessHandle* process) {
     }
     if (!tier0_address.has_value()) {
         log("failed to get %s base address", TIER0_LIB);
-        std::nullopt;
+        return std::nullopt;
     }
 
     offsets.libraries.client = client_address.value();

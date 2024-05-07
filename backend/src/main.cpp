@@ -1,11 +1,8 @@
 #include <stdarg.h>
 #include <unistd.h>
 
-#include <fstream>
-#include <iostream>
 #include <thread>
 
-#include "characters.h"
 #include "config.h"
 #include "cs2.h"
 #include "log.h"

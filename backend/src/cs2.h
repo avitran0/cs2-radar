@@ -3,7 +3,6 @@
 
 #include "math.h"
 #include "memory.h"
-#include "weapons.h"
 
 /*
 Colors:
