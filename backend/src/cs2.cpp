@@ -6,6 +6,19 @@
 #include "log.h"
 #include "math.h"
 
+bool all_offsets_found(Offsets offsets) {
+    return offsets.controller.pawn && offsets.controller.name &&
+           offsets.controller.money_services && offsets.pawn.health &&
+           offsets.pawn.armor && offsets.pawn.team && offsets.pawn.life_state &&
+           offsets.pawn.weapon && offsets.pawn.bullet_services &&
+           offsets.pawn.weapon_services && offsets.money_services.money &&
+           offsets.bullet_services.total_hits &&
+           offsets.weapon_services.active_weapon &&
+           offsets.weapon_services.my_weapons && offsets.controller.color &&
+           offsets.pawn.position && offsets.pawn.observer_services &&
+           offsets.observer_services.target;
+}
+
 std::optional<Offsets> init(ProcessHandle* process) {
     Offsets offsets = {};
 
@@ -246,6 +259,10 @@ std::optional<Offsets> init(ProcessHandle* process) {
             }
             auto offset = *(i32*)(entry + 0x08);
             offsets.observer_services.target = offset;
+        }
+
+        if (all_offsets_found(offsets)) {
+            return offsets;
         }
     }
 
