@@ -1,6 +1,7 @@
 #include <stdarg.h>
 #include <unistd.h>
 
+#include <format>
 #include <thread>
 
 #include "config.h"
@@ -19,19 +20,19 @@ std::string format_string(const char* fmt, ...) {
 
 // player to json string
 std::string player_to_string(Player player) {
-    return format_string(
-        "{"
-        "\"name\": \"%s\","
-        "\"color\": %d,"
-        "\"health\": %d,"
-        "\"armor\": %d,"
-        "\"money\": %d,"
-        "\"team\": %d,"
-        "\"life_state\": %d,"
-        "\"weapon\": \"%s\","
-        "\"position\": {\"x\": %f, \"y\": %f, \"z\": %f},"
-        "\"active_player\": %d"
-        "}",
+    return std::format(
+        "{{"
+        "\"name\": \"{}\","
+        "\"color\": {},"
+        "\"health\": {},"
+        "\"armor\": {},"
+        "\"money\": {},"
+        "\"team\": {},"
+        "\"life_state\": {},"
+        "\"weapon\": \"{}\","
+        "\"position\": {{\"x\": {}, \"y\": {}, \"z\": {}}},"
+        "\"active_player\": {}"
+        "}}",
         player.name.c_str(), player.color, player.health, player.armor,
         player.money, player.team, player.life_state, player.weapon.c_str(),
         player.position.x, player.position.y, player.position.z,
@@ -53,13 +54,13 @@ std::string serialize_players(std::vector<Player> players) {
 int main() {
     while (true) {
         if (!get_pid(PROCESS_NAME).has_value()) {
-            //log("waiting for %s to start...", PROCESS_NAME);
+            // log("waiting for %s to start...", PROCESS_NAME);
             sleep(1);
             continue;
         }
         log("pid: %d", get_pid(PROCESS_NAME).value());
         if (!open_process(PROCESS_NAME).has_value()) {
-            //log("waiting for %s to start...", PROCESS_NAME);
+            // log("waiting for %s to start...", PROCESS_NAME);
             sleep(1);
             continue;
         }

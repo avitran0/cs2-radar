@@ -46,8 +46,8 @@ class ProcessHandle {
 
     std::vector<u8> dump_module(u64 address);
     std::optional<u64> get_module_export(u64 offset, std::string name);
-    std::optional<u64> get_dynamic_address(u64 offset, u64 tag);
-    std::optional<u64> get_elf_address(u64 offset, u64 tag);
+    std::optional<u64> get_address_from_dynamic_section(u64 offset, u64 tag);
+    std::optional<u64> get_segment_from_pht(u64 offset, u64 tag);
     std::optional<u64> scan_pattern(std::vector<u8> pattern,
                                     std::vector<bool> mask, u64 module_offset);
     u64 get_relative_address(u64 instruction, u64 offset, u64 instruction_size);

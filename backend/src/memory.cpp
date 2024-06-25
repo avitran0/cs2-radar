@@ -205,8 +205,8 @@ std::optional<u64> ProcessHandle::get_module_export(u64 offset,
     const auto add = 0x18;
     const auto length = 0x08;
 
-    auto string_table_opt = get_dynamic_address(offset, 0x05);
-    auto symbol_table_opt = get_dynamic_address(offset, 0x06);
+    auto string_table_opt = get_address_from_dynamic_section(offset, 0x05);
+    auto symbol_table_opt = get_address_from_dynamic_section(offset, 0x06);
     if (!string_table_opt || !symbol_table_opt) {
         return std::nullopt;
     }
@@ -236,9 +236,10 @@ std::optional<u64> ProcessHandle::get_module_export(u64 offset,
     return std::nullopt;
 }
 
-std::optional<u64> ProcessHandle::get_dynamic_address(u64 offset, u64 tag) {
+std::optional<u64> ProcessHandle::get_address_from_dynamic_section(u64 offset,
+                                                                   u64 tag) {
     auto dynamic_section_offset =
-        get_elf_address(offset, ELF_DYNAMIC_SECTION).value();
+        get_segment_from_pht(offset, ELF_DYNAMIC_SECTION_PHT_TYPE).value();
 
     const auto register_size = 8;
 
@@ -262,7 +263,7 @@ std::optional<u64> ProcessHandle::get_dynamic_address(u64 offset, u64 tag) {
     return std::nullopt;
 }
 
-std::optional<u64> ProcessHandle::get_elf_address(u64 offset, u64 tag) {
+std::optional<u64> ProcessHandle::get_segment_from_pht(u64 offset, u64 tag) {
     u64 first_entry = read_u32(offset + ELF_PROGRAM_HEADER_OFFSET) + offset;
 
     auto pht_entry_size = read_u16(offset + ELF_PROGRAM_HEADER_ENTRY_SIZE);
