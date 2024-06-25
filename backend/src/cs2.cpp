@@ -186,33 +186,6 @@ std::optional<Offsets> init(ProcessHandle* process) {
             }
             auto offset = *(i32*)(entry + 0x10);
             offsets.pawn.weapon = offset;
-        } else if (!strcmp(name, "m_clrRender")) {
-            if (offsets.pawn.render_color != 0) {
-                continue;
-            }
-            auto offset = *(i32*)(entry + 0x08);
-            if (offset <= 0 || offset > 10000) {
-                continue;
-            }
-            offsets.pawn.render_color = offset;
-        } else if (!strcmp(name, "m_entitySpottedState")) {
-            if (offsets.pawn.spotted_state != 0) {
-                continue;
-            }
-            auto offset = *(i32*)(entry + 0x10);
-            offsets.pawn.spotted_state = offset;
-        } else if (!strcmp(name, "m_bSpotted")) {
-            if (offsets.spotted_state.spotted != 0) {
-                continue;
-            }
-            auto offset = *(i32*)(entry + 0x10);
-            offsets.spotted_state.spotted = offset;
-        } else if (!strcmp(name, "m_bSpottedByMask")) {
-            if (offsets.spotted_state.spotted_by_mask != 0) {
-                continue;
-            }
-            auto offset = *(i32*)(entry + 0x10);
-            offsets.spotted_state.spotted_by_mask = offset;
         } else if (!strcmp(name, "m_iAccount")) {
             if (offsets.money_services.money != 0) {
                 continue;
@@ -342,16 +315,6 @@ u8 get_life_state(ProcessHandle* process, const Offsets* offsets, u64 pawn) {
     return process->read_u8(pawn + offsets->pawn.life_state);
 }
 
-bool get_spotted(ProcessHandle* process, const Offsets* offsets, u64 pawn) {
-    return process->read_i32(pawn + offsets->pawn.spotted_state +
-                             offsets->spotted_state.spotted);
-}
-
-u64 get_spotted_mask(ProcessHandle* process, const Offsets* offsets, u64 pawn) {
-    return process->read_u64(pawn + offsets->pawn.spotted_state +
-                             offsets->spotted_state.spotted_by_mask);
-}
-
 std::string get_weapon_name(ProcessHandle* process, const Offsets* offsets,
                             u64 weapon_instance) {
     auto weapon_entity_identity = process->read_u64(weapon_instance + 0x10);
@@ -445,7 +408,7 @@ Player get_player_info(ProcessHandle* process, const Offsets* offsets,
     player.weapon = get_weapon(process, offsets, pawn);
     player.color = get_color(process, offsets, controller);
     player.position = get_position(process, offsets, pawn);
-    player.local_player = false;
+    player.active_player = false;
 
     return player;
 }
@@ -470,12 +433,12 @@ std::vector<Player> run(ProcessHandle* process, const Offsets* offsets) {
             continue;
         }
         if (spectator_target == pawn) {
-            player.local_player = true;
+            player.active_player = true;
         }
         players.push_back(player);
     }
     if (!spectator_target) {
-        local_player.local_player = true;
+        local_player.active_player = true;
     }
     if (local_player.team == TEAM_T || local_player.team == TEAM_CT) {
         players.push_back(local_player);

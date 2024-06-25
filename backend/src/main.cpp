@@ -30,12 +30,12 @@ std::string player_to_string(Player player) {
         "\"life_state\": %d,"
         "\"weapon\": \"%s\","
         "\"position\": {\"x\": %f, \"y\": %f, \"z\": %f},"
-        "\"local_player\": %d"
+        "\"active_player\": %d"
         "}",
         player.name.c_str(), player.color, player.health, player.armor,
         player.money, player.team, player.life_state, player.weapon.c_str(),
         player.position.x, player.position.y, player.position.z,
-        player.local_player);
+        player.active_player);
 }
 
 std::string serialize_players(std::vector<Player> players) {

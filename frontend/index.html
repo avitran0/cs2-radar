@@ -403,11 +403,11 @@
             function wsMessage(event) {
                 indicator.style.backgroundColor = "var(--color-green)";
                 /** @type {{name: string, color: number, health: number, armor: number, team: number, life_state: number, weapon: string, position: {x: number, y: number, z: number}, local_player: boolean}[]} */
-                // try to parse the data
                 let data;
                 try {
                     data = JSON.parse(event.data);
                 } catch (e) {
+                    console.error(e);
                     return;
                 }
 
@@ -417,10 +417,10 @@
                 if (data.length === 0 || !active) {
                     return;
                 }
-                const local_player = data.find((player) => player.local_player);
+                const active_player = data.find((player) => player.active_player);
                 let local_player_layer = MapLayers.Default;
                 // switch to lower radar threshold if player is below it
-                if (map.lowerThreshold && local_player.position.z < map.lowerThreshold) {
+                if (map.lowerThreshold && active_player.position.z < map.lowerThreshold) {
                     setMapImage(getRadarName() + "_lower");
                     local_player_layer = MapLayers.Lower;
                 } else {
@@ -443,7 +443,7 @@
                     const x = ((player.position.x - map.x) / map.scale) * (cx / 1024);
                     const y = -((player.position.y - map.y) / map.scale) * (cy / 1024);
 
-                    const dot = getPlayerDot(player, x, y, player.team === local_player.team);
+                    const dot = getPlayerDot(player, x, y, player.team === active_player.team);
 
                     const player_layer = player.position.z < map.lowerThreshold ? MapLayers.Lower : MapLayers.Default;
                     if (player_layer !== local_player_layer) {

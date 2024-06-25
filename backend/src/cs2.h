@@ -56,17 +56,10 @@ struct PawnOffsets {
     u64 team;               // u8 m_iTeamNum
     u64 life_state;         // u8 m_lifeState
     u64 weapon;             // pointer m_pClippingWeapon
-    u64 render_color;       // 3 x u8 m_clrRender
-    u64 spotted_state;      // pointer m_entitySpottedState
     u64 bullet_services;    // pointer m_pBulletServices
     u64 weapon_services;    // pointer m_pWeaponServices
     u64 position;           // Vec3 m_vOldOrigin
     u64 observer_services;  // pointer m_pObserverServices
-};
-
-struct EntitySpottedStateOffsets {
-    u64 spotted;          // bool m_bSpotted
-    u64 spotted_by_mask;  // u64 m_bSpottedByMask
 };
 
 struct MoneyServicesOffsets {
@@ -93,7 +86,6 @@ struct Offsets {
     LibraryOffsets libraries;
     PlayerControllerOffsets controller;
     PawnOffsets pawn;
-    EntitySpottedStateOffsets spotted_state;
     MoneyServicesOffsets money_services;
     BulletServicesOffsets bullet_services;
     WeaponServicesOffsets weapon_services;
@@ -110,7 +102,7 @@ struct Player {
     std::string weapon;
     i32 color;
     Vec3 position;
-    bool local_player;
+    bool active_player;
 };
 
 std::optional<Offsets> init(ProcessHandle* process);
