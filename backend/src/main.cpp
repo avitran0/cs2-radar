@@ -1,6 +1,7 @@
 #include <stdarg.h>
 #include <unistd.h>
 
+#include <chrono>
 #include <format>
 #include <thread>
 
@@ -8,15 +9,6 @@
 #include "cs2.h"
 #include "log.h"
 #include "memory.h"
-
-std::string format_string(const char* fmt, ...) {
-    va_list args;
-    va_start(args, fmt);
-    char buffer[1024];
-    vsnprintf(buffer, sizeof(buffer), fmt, args);
-    va_end(args);
-    return std::string(buffer);
-}
 
 // player to json string
 std::string player_to_string(Player player) {
@@ -55,13 +47,13 @@ int main() {
     while (true) {
         if (!get_pid(PROCESS_NAME).has_value()) {
             // log("waiting for %s to start...", PROCESS_NAME);
-            sleep(1);
+            std::this_thread::sleep_for(std::chrono::seconds(1));
             continue;
         }
         log("pid: %d", get_pid(PROCESS_NAME).value());
         if (!open_process(PROCESS_NAME).has_value()) {
             // log("waiting for %s to start...", PROCESS_NAME);
-            sleep(1);
+            std::this_thread::sleep_for(std::chrono::seconds(1));
             continue;
         }
         auto process = open_process(PROCESS_NAME).value();
@@ -70,6 +62,7 @@ int main() {
         if (!offsets_opt.has_value()) {
             log("failed to initialize offsets");
             process.discard();
+            std::this_thread::sleep_for(std::chrono::seconds(1));
             continue;
         }
         auto offsets = offsets_opt.value();

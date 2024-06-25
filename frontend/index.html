@@ -320,7 +320,9 @@
                 5: "var(--color-text)",
             };
 
-            /** @type {Map<string, {x: number, y: number, scale: number, rotate: boolean, zoom: number, lowerThreshold?: number}>} */
+            /** @type {Map<string, {x: number, y: number, scale: number,
+             * rotate: boolean, zoom: number, lowerThreshold?: number}>}
+             */
             const mapData = {
                 de_ancient: {
                     x: -2953,
@@ -390,6 +392,7 @@
             let map = mapData["de_nuke"];
             let radarType = RadarTypes.Callouts;
 
+            let pingInterval;
             function startWS() {
                 const url = window.location.href.replace("http://", "ws://");
                 const ws = new WebSocket(url);
@@ -397,17 +400,27 @@
                 ws.onclose = () => {
                     setTimeout(startWS, 1000);
                     indicator.style.backgroundColor = "var(--color-red)";
+                    pingInterval = null;
                 };
+                pingInterval = setTimeout(() => {
+                    ws.send("ping");
+                }, 1000);
             }
 
             function wsMessage(event) {
                 indicator.style.backgroundColor = "var(--color-green)";
-                /** @type {{name: string, color: number, health: number, armor: number, team: number, life_state: number, weapon: string, position: {x: number, y: number, z: number}, local_player: boolean}[]} */
+
+                /**
+                 * @type {{name: string, color: number, health: number, armor: number, team: number,
+                 * life_state: number, weapon: string, total_hits: number,
+                 * position: {x: number, y: number, z: number},
+                 * active_player: boolean, local_player: boolean}[]}
+                 */
                 let data;
                 try {
                     data = JSON.parse(event.data);
                 } catch (e) {
-                    console.error(e);
+                    //console.error(e);
                     return;
                 }
 
@@ -418,11 +431,11 @@
                     return;
                 }
                 const active_player = data.find((player) => player.active_player);
-                let local_player_layer = MapLayers.Default;
-                // switch to lower radar threshold if player is below it
+                let active_player_layer = MapLayers.Default;
+                // switch to lower radar layer if player is below threshold
                 if (map.lowerThreshold && active_player.position.z < map.lowerThreshold) {
                     setMapImage(getRadarName() + "_lower");
-                    local_player_layer = MapLayers.Lower;
+                    active_player_layer = MapLayers.Lower;
                 } else {
                     setMapImage(getRadarName());
                 }
@@ -446,7 +459,7 @@
                     const dot = getPlayerDot(player, x, y, player.team === active_player.team);
 
                     const player_layer = player.position.z < map.lowerThreshold ? MapLayers.Lower : MapLayers.Default;
-                    if (player_layer !== local_player_layer) {
+                    if (player_layer !== active_player_layer) {
                         dot.style.opacity = "0.5";
                     }
 

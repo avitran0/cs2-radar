@@ -22,6 +22,12 @@ const server = app.listen(port, () => {
 
 const ws = new WebSocketServer({ server });
 
+ws.on("connection", (socket) => {
+    socket.onmessage = (event) => {
+        event.target.send("pong");
+    }
+});
+
 const radar = spawn("./static/cs2-radar");
 
 // data is a Buffer
