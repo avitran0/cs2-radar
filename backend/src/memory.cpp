@@ -202,10 +202,8 @@ std::optional<u64> ProcessHandle::get_module_export(u64 offset,
         return std::nullopt;
     }
 
-    auto wow64 = data[ELF_MACHINE_TYPE] == ELF_MACHINE_x64;
-
-    auto add = wow64 ? 0x18 : 0x10;
-    auto length = wow64 ? 0x08 : 0x04;
+    const auto add = 0x18;
+    const auto length = 0x08;
 
     auto string_table_opt = get_dynamic_address(offset, 0x05);
     auto symbol_table_opt = get_dynamic_address(offset, 0x06);
@@ -230,9 +228,7 @@ std::optional<u64> ProcessHandle::get_module_export(u64 offset,
         if (export_name == name) {
             auto address_vec = read_bytes(symbol_table + length, length);
             // return u64 from vector
-            return (wow64 ? *(u64*)address_vec.data()
-                          : *(u32*)address_vec.data()) +
-                   offset;
+            return *(u64*)address_vec.data() + offset;
         }
         symbol_table += add;
     }
@@ -244,24 +240,20 @@ std::optional<u64> ProcessHandle::get_dynamic_address(u64 offset, u64 tag) {
     auto dynamic_section_offset =
         get_elf_address(offset, ELF_DYNAMIC_SECTION).value();
 
-    auto wow64 = read_u16(offset + ELF_MACHINE_TYPE) == ELF_MACHINE_x64;
-    auto register_size = wow64 ? 8 : 4;
+    const auto register_size = 8;
 
-    u64 address =
-        wow64 ? read_u64(dynamic_section_offset + 2 * register_size) + offset
-              : read_u32(dynamic_section_offset + 2 * register_size) + offset;
+    u64 address = read_u64(dynamic_section_offset + 2 * register_size) + offset;
 
     while (true) {
         auto tag_address = address;
-        u64 tag_value = wow64 ? read_u64(tag_address) : read_u32(tag_address);
+        u64 tag_value = read_u64(tag_address);
 
         if (tag_value == 0) {
             break;
         }
 
         if (tag_value == tag) {
-            return wow64 ? read_u64(tag_address + register_size)
-                         : read_u32(tag_address + register_size);
+            return read_u64(tag_address + register_size);
         }
 
         address += register_size * 2;
@@ -314,6 +306,7 @@ std::optional<u64> ProcessHandle::scan_pattern(std::vector<u8> pattern,
 
 u64 ProcessHandle::get_relative_address(u64 instruction, u64 offset,
                                         u64 instruction_size) {
+    // THIS HAS TO BE I32!!!
     u64 rip_address = read_i32(instruction + offset);
     return (u64)(instruction + instruction_size + rip_address);
 }
@@ -362,7 +355,7 @@ std::optional<u64> ProcessHandle::get_convar(u64 convar_offset,
     auto objects = read_u64(convar_offset + 64);
     auto name_length = convar_name.length();
 
-    for (size_t i = 0; i < read_i32(convar_offset + 160); i++) {
+    for (size_t i = 0; i < read_u32(convar_offset + 160); i++) {
         auto object = read_u64(objects + i * 16);
         if (object == 0) {
             break;
@@ -383,9 +376,7 @@ std::optional<u64> ProcessHandle::get_convar(u64 convar_offset,
     return std::nullopt;
 }
 
-void ProcessHandle::discard() {
-    close(memory);
-}
+void ProcessHandle::discard() { close(memory); }
 
 i8 read_i8_from_vector(u8* bytes, u64 address) {
     return *(i8*)(bytes + address);

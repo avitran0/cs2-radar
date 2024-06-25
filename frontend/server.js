@@ -26,7 +26,7 @@ const radar = spawn("./static/cs2-radar");
 
 // data is a Buffer
 radar.stdout.on("data", (data) => {
-    //console.info(`stdout: ${data}`);
+    process.stdout.write(`cs2: ${data}`);
 });
 
 radar.stderr.on("data", (data) => {

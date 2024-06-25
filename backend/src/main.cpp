@@ -53,26 +53,27 @@ std::string serialize_players(std::vector<Player> players) {
 int main() {
     while (true) {
         if (!get_pid(PROCESS_NAME).has_value()) {
-            log("Waiting for %s to start...", PROCESS_NAME);
+            //log("waiting for %s to start...", PROCESS_NAME);
             sleep(1);
             continue;
         }
         log("pid: %d", get_pid(PROCESS_NAME).value());
         if (!open_process(PROCESS_NAME).has_value()) {
-            log("Waiting for %s to start...", PROCESS_NAME);
+            //log("waiting for %s to start...", PROCESS_NAME);
             sleep(1);
             continue;
         }
         auto process = open_process(PROCESS_NAME).value();
+        log("process found, finding offsets");
         auto offsets_opt = init(&process);
         if (!offsets_opt.has_value()) {
-            log("Failed to initialize offsets");
+            log("failed to initialize offsets");
             process.discard();
             continue;
         }
         auto offsets = offsets_opt.value();
 
-        log("game started");
+        log("offsets found");
 
         while (true) {
             if (!validate_pid(process.pid)) {
