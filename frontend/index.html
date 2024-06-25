@@ -212,8 +212,8 @@
 
             .dot {
                 position: absolute;
-                width: 1.5%;
-                height: 1.5%;
+                width: 2%;
+                height: 2%;
                 border-radius: 50%;
                 transform: translate(-50%, -50%);
                 box-shadow: 0 0 0.5rem 0.2rem rgba(0, 0, 0, 0.75);
@@ -493,7 +493,7 @@
                 const armorIcon = document.createElement("img");
                 armorIcon.src = "/icons/svg/armor.svg";
                 const armorText = document.createElement("span");
-                armorText.textContent = `${player.armor}`;
+                armorText.textContent = `${player.health <= 0 ? 0 : player.armor}`;
                 armor.appendChild(armorIcon);
                 armor.appendChild(armorText);
                 data.appendChild(armor);
