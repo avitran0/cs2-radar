@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-#include "config.h"
+#include "constants.h"
 #include "log.h"
 #include "math.h"
 

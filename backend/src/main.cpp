@@ -6,6 +6,7 @@
 #include <thread>
 
 #include "config.h"
+#include "constants.h"
 #include "cs2.h"
 #include "log.h"
 #include "memory.h"
