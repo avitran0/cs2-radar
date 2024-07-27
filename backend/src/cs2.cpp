@@ -283,7 +283,7 @@ u64 get_client_entity(ProcessHandle* process, const Offsets* offsets,
 }
 
 u64 get_pawn(ProcessHandle* process, const Offsets* offsets, u64 controller) {
-    u64 v1 = process->read_u32(controller + offsets->controller.pawn);
+    i64 v1 = process->read_u32(controller + offsets->controller.pawn);
     if (v1 == -1) {
         return 0;
     }
@@ -437,7 +437,7 @@ std::vector<Player> run(ProcessHandle* process, const Offsets* offsets) {
     auto spectator_target = get_spectator_target(process, offsets, local_pawn);
 
     auto players = std::vector<Player>();
-    for (size_t i = 1; i <= 64; i++) {
+    for (i32 i = 1; i <= 64; i++) {
         auto controller = get_client_entity(process, offsets, i);
         if (controller == 0 || controller == local_controller) {
             continue;
