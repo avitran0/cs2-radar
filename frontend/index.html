@@ -206,6 +206,17 @@
                 color: var(--color-yellow);
             }
 
+            .weapon-container {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .weapon-container > p {
+                font-size: 12px;
+            }
+
             .weapon {
                 height: 2.4rem;
             }
@@ -516,6 +527,8 @@
                 element.appendChild(data);
 
                 // add svg for weapon
+                const weaponContainer = document.createElement("div");
+                weaponContainer.classList.add("weapon-container");
                 const weapon = document.createElement("img");
                 weapon.className = "weapon";
                 if (player.weapon === "") {
@@ -523,7 +536,12 @@
                 }
                 // check if the image exists
                 weapon.src = `/icons/svg/${player.weapon}.svg`;
-                element.appendChild(weapon);
+
+                const weaponName = document.createElement("p");
+                weaponName.textContent = player.weapon;
+                weaponContainer.appendChild(weapon);
+                weaponContainer.appendChild(weaponName);
+                element.appendChild(weaponContainer);
 
                 element.style.borderColor = Colors[player.color] ?? "var(--color-text)";
                 if (player.local_player) {

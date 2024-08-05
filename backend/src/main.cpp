@@ -46,18 +46,20 @@ std::string serialize_players(std::vector<Player> players) {
 
 int main() {
     while (true) {
-        if (!get_pid(PROCESS_NAME).has_value()) {
+        const auto pid = get_pid(PROCESS_NAME);
+        if (!pid.has_value()) {
             // log("waiting for %s to start...", PROCESS_NAME);
             std::this_thread::sleep_for(std::chrono::seconds(1));
             continue;
         }
-        log("pid: %d", get_pid(PROCESS_NAME).value());
-        if (!open_process(PROCESS_NAME).has_value()) {
+        log("pid: %d", pid.value());
+        const auto proc = open_process(pid.value());
+        if (!proc.has_value()) {
             // log("waiting for %s to start...", PROCESS_NAME);
             std::this_thread::sleep_for(std::chrono::seconds(1));
             continue;
         }
-        auto process = open_process(PROCESS_NAME).value();
+        auto process = proc.value();
         log("process found, finding offsets");
         auto offsets_opt = init(&process);
         if (!offsets_opt.has_value()) {
@@ -66,7 +68,7 @@ int main() {
             std::this_thread::sleep_for(std::chrono::seconds(1));
             continue;
         }
-        auto offsets = offsets_opt.value();
+        const auto offsets = offsets_opt.value();
 
         log("offsets found");
 
@@ -79,12 +81,7 @@ int main() {
             auto players = run(&process, &offsets);
             auto players_str = serialize_players(players);
 
-            log_error("%s", players_str.c_str());
-
-            // write to file
-            /*std::ofstream file("players.json");
-            file << players_str;
-            file.close();*/
+            error("%s", players_str.c_str());
 
             std::this_thread::sleep_for(
                 std::chrono::milliseconds(REFRESH_INTERVAL));

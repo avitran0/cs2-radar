@@ -15,19 +15,20 @@
 #include "log.h"
 
 std::optional<int> get_pid(std::string process_name) {
-    auto dir = opendir("/proc");
+    const auto dir = opendir("/proc");
     if (!dir) {
         return std::nullopt;
     }
 
-    dirent* entry;
+    dirent *entry;
     while ((entry = readdir(dir))) {
         if (entry->d_type != DT_DIR) {
             continue;
         }
 
         // get executable name
-        std::string exe_path = std::string("/proc/") + entry->d_name + "/exe";
+        const std::string exe_path =
+            std::string("/proc/") + entry->d_name + "/exe";
         char exe[256] = {0};
         if (readlink(exe_path.c_str(), exe, sizeof(exe) - 1) == -1) {
             continue;
@@ -35,7 +36,7 @@ std::optional<int> get_pid(std::string process_name) {
 
         // get executable name
         std::string name = std::string(exe);
-        size_t pos = name.rfind('/');
+        const size_t pos = name.rfind('/');
         if (pos == std::string::npos) {
             continue;
         }
@@ -61,25 +62,16 @@ std::optional<ProcessHandle> open_process(int pid) {
     ProcessHandle handle;
     handle.pid = pid;
     handle.memory =
-        open(("/proc/" + std::to_string(pid) + "/mem").c_str(), O_RDWR);
+        open(("/proc/" + std::to_string(pid) + "/mem").c_str(), O_RDONLY);
     if (handle.memory == -1) {
         return std::nullopt;
     }
-    handle.lib_addresses = {};
     return handle;
 }
 
-std::optional<ProcessHandle> open_process(std::string process_name) {
-    auto pid = get_pid(process_name);
-    if (!pid) {
-        return std::nullopt;
-    }
-    return open_process(pid.value());
-}
-
 std::optional<u64> get_module_base_address(int pid, std::string module_name) {
-    std::string maps_path = "/proc/" + std::to_string(pid) + "/maps";
-    auto maps = fopen(maps_path.c_str(), "r");
+    const std::string maps_path = "/proc/" + std::to_string(pid) + "/maps";
+    const auto maps = fopen(maps_path.c_str(), "r");
     if (!maps) {
         return std::nullopt;
     }
@@ -175,14 +167,16 @@ std::string ProcessHandle::read_string(u64 address) {
 }
 
 std::vector<u8> ProcessHandle::dump_module(u64 address) {
-    auto section_header_offset = read_u64(address + ELF_SECTION_HEADER_OFFSET);
-    auto section_header_entry_size =
+    const auto section_header_offset =
+        read_u64(address + ELF_SECTION_HEADER_OFFSET);
+    const auto section_header_entry_size =
         read_u16(address + ELF_SECTION_HEADER_ENTRY_SIZE);
-    auto section_header_num_entries =
+    const auto section_header_num_entries =
         read_u16(address + ELF_SECTION_HEADER_NUM_ENTRIES);
 
-    u64 module_size = section_header_offset +
-                      section_header_entry_size * section_header_num_entries;
+    const u64 module_size =
+        section_header_offset +
+        section_header_entry_size * section_header_num_entries;
 
     return read_bytes(address, module_size);
 }
@@ -197,7 +191,7 @@ bool check_elf_header(std::vector<u8> data) {
 
 std::optional<u64> ProcessHandle::get_module_export(u64 offset,
                                                     std::string export_name) {
-    auto data = dump_module(offset);
+    const auto data = dump_module(offset);
     if (data.empty() || !check_elf_header(data)) {
         return std::nullopt;
     }
@@ -205,30 +199,32 @@ std::optional<u64> ProcessHandle::get_module_export(u64 offset,
     const auto add = 0x18;
     const auto length = 0x08;
 
-    auto string_table_opt = get_address_from_dynamic_section(offset, 0x05);
-    auto symbol_table_opt = get_address_from_dynamic_section(offset, 0x06);
+    const auto string_table_opt =
+        get_address_from_dynamic_section(offset, 0x05);
+    const auto symbol_table_opt =
+        get_address_from_dynamic_section(offset, 0x06);
     if (!string_table_opt || !symbol_table_opt) {
         return std::nullopt;
     }
 
-    auto string_table = string_table_opt.value();
+    const auto string_table = string_table_opt.value();
     auto symbol_table = symbol_table_opt.value();
     symbol_table += add;
 
     u32 st_name;
     while (read_u32(symbol_table) != 0) {
         st_name = read_u32(symbol_table);
-        auto name_bytes = read_bytes(string_table + st_name, 120);
+        const auto name_bytes = read_bytes(string_table + st_name, 120);
 
         auto name = std::string(name_bytes.begin(), name_bytes.end());
         name.push_back(0x00);
-        // find first occurrence of null byte
-        auto null_byte = name.find('\0');
+        // find first occurrence of null byte (necessary?)
+        const auto null_byte = name.find('\0');
         name = name.substr(0, null_byte);
         if (export_name == name) {
-            auto address_vec = read_bytes(symbol_table + length, length);
+            const auto address_vec = read_bytes(symbol_table + length, length);
             // return u64 from vector
-            return *(u64*)address_vec.data() + offset;
+            return *(u64 *)address_vec.data() + offset;
         }
         symbol_table += add;
     }
@@ -238,7 +234,7 @@ std::optional<u64> ProcessHandle::get_module_export(u64 offset,
 
 std::optional<u64> ProcessHandle::get_address_from_dynamic_section(u64 offset,
                                                                    u64 tag) {
-    auto dynamic_section_offset =
+    const auto dynamic_section_offset =
         get_segment_from_pht(offset, ELF_DYNAMIC_SECTION_PHT_TYPE).value();
 
     const auto register_size = 8;
@@ -247,7 +243,7 @@ std::optional<u64> ProcessHandle::get_address_from_dynamic_section(u64 offset,
 
     while (true) {
         auto tag_address = address;
-        u64 tag_value = read_u64(tag_address);
+        const u64 tag_value = read_u64(tag_address);
 
         if (tag_value == 0) {
             break;
@@ -264,13 +260,15 @@ std::optional<u64> ProcessHandle::get_address_from_dynamic_section(u64 offset,
 }
 
 std::optional<u64> ProcessHandle::get_segment_from_pht(u64 offset, u64 tag) {
-    u64 first_entry = read_u32(offset + ELF_PROGRAM_HEADER_OFFSET) + offset;
+    const u64 first_entry =
+        read_u32(offset + ELF_PROGRAM_HEADER_OFFSET) + offset;
 
-    auto pht_entry_size = read_u16(offset + ELF_PROGRAM_HEADER_ENTRY_SIZE);
+    const auto pht_entry_size =
+        read_u16(offset + ELF_PROGRAM_HEADER_ENTRY_SIZE);
 
     for (size_t i = 0; i < read_u16(offset + ELF_PROGRAM_HEADER_NUM_ENTRIES);
          i++) {
-        u64 entry = first_entry + i * pht_entry_size;
+        const u64 entry = first_entry + i * pht_entry_size;
         if (read_u32(entry) == tag) {
             return entry;
         }
@@ -285,7 +283,7 @@ std::optional<u64> ProcessHandle::scan_pattern(std::vector<u8> pattern,
         log("pattern and mask size mismatch");
         return std::nullopt;
     }
-    auto mem = dump_module(module_offset);
+    const auto mem = dump_module(module_offset);
     if (mem.empty()) {
         return std::nullopt;
     }
@@ -308,39 +306,38 @@ std::optional<u64> ProcessHandle::scan_pattern(std::vector<u8> pattern,
 u64 ProcessHandle::get_relative_address(u64 instruction, u64 offset,
                                         u64 instruction_size) {
     // THIS HAS TO BE I32!!!
-    u64 rip_address = read_i32(instruction + offset);
+    const u64 rip_address = read_i32(instruction + offset);
     return (u64)(instruction + instruction_size + rip_address);
 }
 
 std::optional<u64> ProcessHandle::get_interface_offset(
     u64 lib_address, std::string interface_name) {
-    auto interface_export = get_module_export(lib_address, "CreateInterface");
+    const auto interface_export =
+        get_module_export(lib_address, "CreateInterface");
     if (!interface_export.has_value()) {
         log("failed to get CreateInterface export");
         return 0;
     }
 
-    auto export_address =
+    const auto export_address =
         get_relative_address(interface_export.value(), 0x01, 0x05) + 0x10;
 
     auto interface_entry =
         read_u64(export_address + 0x07 + read_u32(export_address + 0x03));
-    auto name_length = interface_name.length();
+    const auto name_length = interface_name.length();
 
     while (true) {
-        auto interface_name_address = read_u64((interface_entry + 8));
-        auto name_bytes = read_bytes(interface_name_address, name_length);
+        const auto interface_name_address = read_u64((interface_entry + 8));
+        const auto name_bytes = read_bytes(interface_name_address, name_length);
 
         auto name = std::string(name_bytes.begin(), name_bytes.end());
         name.push_back(0x00);
         // find first occurrence of null byte
-        auto null_byte = name.find('\0');
+        const auto null_byte = name.find('\0');
         name = name.substr(0, null_byte);
         if (interface_name == name) {
-            auto vfunc_address = read_u64(interface_entry);
-            auto address =
-                read_u32(vfunc_address + 0x03) + vfunc_address + 0x07;
-            return address;
+            const auto vfunc_address = read_u64(interface_entry);
+            return read_u32(vfunc_address + 0x03) + vfunc_address + 0x07;
         }
         interface_entry = read_u64(interface_entry + 0x10);
         if (interface_entry == 0) {
@@ -353,21 +350,21 @@ std::optional<u64> ProcessHandle::get_interface_offset(
 
 std::optional<u64> ProcessHandle::get_convar(u64 convar_offset,
                                              std::string convar_name) {
-    auto objects = read_u64(convar_offset + 64);
-    auto name_length = convar_name.length();
+    const auto objects = read_u64(convar_offset + 64);
+    const auto name_length = convar_name.length();
 
     for (size_t i = 0; i < read_u32(convar_offset + 160); i++) {
-        auto object = read_u64(objects + i * 16);
+        const auto object = read_u64(objects + i * 16);
         if (object == 0) {
             break;
         }
 
-        auto name_bytes = read_bytes(read_u64(object), name_length);
+        const auto name_bytes = read_bytes(read_u64(object), name_length);
 
         auto name = std::string(name_bytes.begin(), name_bytes.end());
         name.push_back(0x00);
         // find first occurrence of null byte
-        auto null_byte = name.find('\0');
+        const auto null_byte = name.find('\0');
         name = name.substr(0, null_byte);
         if (convar_name == name) {
             return object;
@@ -379,42 +376,42 @@ std::optional<u64> ProcessHandle::get_convar(u64 convar_offset,
 
 void ProcessHandle::discard() { close(memory); }
 
-i8 read_i8_from_vector(u8* bytes, u64 address) {
-    return *(i8*)(bytes + address);
+i8 read_i8_from_vector(u8 *bytes, u64 address) {
+    return *(i8 *)(bytes + address);
 }
 
-i16 read_i16_from_vector(u8* bytes, u64 address) {
-    return *(i16*)(bytes + address);
+i16 read_i16_from_vector(u8 *bytes, u64 address) {
+    return *(i16 *)(bytes + address);
 }
 
-i32 read_i32_from_vector(u8* bytes, u64 address) {
-    return *(i32*)(bytes + address);
+i32 read_i32_from_vector(u8 *bytes, u64 address) {
+    return *(i32 *)(bytes + address);
 }
 
-i64 read_i64_from_vector(u8* bytes, u64 address) {
-    return *(i64*)(bytes + address);
+i64 read_i64_from_vector(u8 *bytes, u64 address) {
+    return *(i64 *)(bytes + address);
 }
 
-u8 read_u8_from_vector(u8* bytes, u64 address) {
-    return *(u8*)(bytes + address);
+u8 read_u8_from_vector(u8 *bytes, u64 address) {
+    return *(u8 *)(bytes + address);
 }
 
-u16 read_u16_from_vector(u8* bytes, u64 address) {
-    return *(u16*)(bytes + address);
+u16 read_u16_from_vector(u8 *bytes, u64 address) {
+    return *(u16 *)(bytes + address);
 }
 
-u32 read_u32_from_vector(u8* bytes, u64 address) {
-    return *(u32*)(bytes + address);
+u32 read_u32_from_vector(u8 *bytes, u64 address) {
+    return *(u32 *)(bytes + address);
 }
 
-u64 read_u64_from_vector(u8* bytes, u64 address) {
-    return *(u64*)(bytes + address);
+u64 read_u64_from_vector(u8 *bytes, u64 address) {
+    return *(u64 *)(bytes + address);
 }
 
-f32 read_f32_from_vector(u8* bytes, u64 address) {
-    return *(f32*)(bytes + address);
+f32 read_f32_from_vector(u8 *bytes, u64 address) {
+    return *(f32 *)(bytes + address);
 }
 
-f64 read_f64_from_vector(u8* bytes, u64 address) {
-    return *(f64*)(bytes + address);
+f64 read_f64_from_vector(u8 *bytes, u64 address) {
+    return *(f64 *)(bytes + address);
 }

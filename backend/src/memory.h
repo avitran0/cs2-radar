@@ -24,7 +24,6 @@ class ProcessHandle {
   public:
     int pid;
     int memory;
-    std::map<std::string, u64> lib_addresses;
 
     i8 read_i8(u64 address);
     i16 read_i16(u64 address);
@@ -59,25 +58,22 @@ class ProcessHandle {
 };
 
 std::optional<int> get_pid(std::string process_name);
-
 bool validate_pid(int pid);
-
 std::optional<ProcessHandle> open_process(int pid);
-std::optional<ProcessHandle> open_process(std::string process_name);
 
 std::optional<u64> get_module_base_address(int pid, std::string module_name);
 
-i8 read_i8_from_vector(u8* bytes, u64 address);
-i16 read_i16_from_vector(u8* bytes, u64 address);
-i32 read_i32_from_vector(u8* bytes, u64 address);
-i64 read_i64_from_vector(u8* bytes, u64 address);
+i8 read_i8_from_vector(u8 *bytes, u64 address);
+i16 read_i16_from_vector(u8 *bytes, u64 address);
+i32 read_i32_from_vector(u8 *bytes, u64 address);
+i64 read_i64_from_vector(u8 *bytes, u64 address);
 
-u8 read_u8_from_vector(u8* bytes, u64 address);
-u16 read_u16_from_vector(u8* bytes, u64 address);
-u32 read_u32_from_vector(u8* bytes, u64 address);
-u64 read_u64_from_vector(u8* bytes, u64 address);
+u8 read_u8_from_vector(u8 *bytes, u64 address);
+u16 read_u16_from_vector(u8 *bytes, u64 address);
+u32 read_u32_from_vector(u8 *bytes, u64 address);
+u64 read_u64_from_vector(u8 *bytes, u64 address);
 
-f32 read_f32_from_vector(u8* bytes, u64 address);
-f64 read_f64_from_vector(u8* bytes, u64 address);
+f32 read_f32_from_vector(u8 *bytes, u64 address);
+f64 read_f64_from_vector(u8 *bytes, u64 address);
 
 #endif

@@ -4,7 +4,7 @@
 
 #include <cstdarg>
 
-void log(const char* message, ...) {
+void log(const char *message, ...) {
     va_list args;
     va_start(args, message);
     vprintf(message, args);
@@ -13,7 +13,7 @@ void log(const char* message, ...) {
     fflush(stdout);
 }
 
-void log_error(const char* message, ...) {
+void error(const char *message, ...) {
     va_list args;
     va_start(args, message);
     vfprintf(stderr, message, args);
