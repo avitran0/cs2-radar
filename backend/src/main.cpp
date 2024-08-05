@@ -1,6 +1,3 @@
-#include <stdarg.h>
-#include <unistd.h>
-
 #include <chrono>
 #include <format>
 #include <thread>
@@ -48,14 +45,12 @@ int main() {
     while (true) {
         const auto pid = get_pid(PROCESS_NAME);
         if (!pid.has_value()) {
-            // log("waiting for %s to start...", PROCESS_NAME);
             std::this_thread::sleep_for(std::chrono::seconds(1));
             continue;
         }
         log("pid: %d", pid.value());
         const auto proc = open_process(pid.value());
         if (!proc.has_value()) {
-            // log("waiting for %s to start...", PROCESS_NAME);
             std::this_thread::sleep_for(std::chrono::seconds(1));
             continue;
         }

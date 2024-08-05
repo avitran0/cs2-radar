@@ -2,7 +2,6 @@
 #define CS2_RADAR_MEMORY
 
 #include <cstdint>
-#include <map>
 #include <optional>
 #include <string>
 #include <vector>

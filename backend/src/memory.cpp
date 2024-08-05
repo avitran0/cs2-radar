@@ -1,11 +1,9 @@
 #include "memory.h"
 
-#include <dirent.h>
 #include <fcntl.h>
 #include <string.h>
 #include <unistd.h>
 
-#include <algorithm>
 #include <filesystem>
 #include <iostream>
 #include <optional>
@@ -16,58 +14,34 @@
 #include "log.h"
 
 std::optional<int> get_pid(std::string process_name) {
-    const auto dir = opendir("/proc");
-    if (!dir) {
-        return std::nullopt;
-    }
-
-    dirent *entry;
-    /*for (const auto &entry : std::filesystem::directory_iterator("/proc")) {
+    for (const auto &entry : std::filesystem::directory_iterator("/proc")) {
         if (!entry.is_directory()) {
             continue;
         }
 
-        const auto exe_path =
-            "/proc/" + entry.path().filename().string() + "/exe";
+        const auto filename = entry.path().filename().string();
+        const auto exe_path = "/proc/" + filename + "/exe";
+        if (access(exe_path.c_str(), F_OK) != 0) {
+            continue;
+        }
         const auto exe_name = std::filesystem::read_symlink(exe_path).string();
         const auto pos = exe_name.rfind('/');
         // rfind returns npos on fail
         if (pos == std::string::npos) {
             continue;
         }
-    }*/
-    while ((entry = readdir(dir))) {
-        if (entry->d_type != DT_DIR) {
-            continue;
-        }
 
-        // get executable name
-        const std::string exe_path =
-            std::string("/proc/") + entry->d_name + "/exe";
-        char exe[256] = {0};
-        if (readlink(exe_path.c_str(), exe, sizeof(exe) - 1) == -1) {
-            continue;
-        }
-
-        // get executable name
-        std::string name = std::string(exe);
-        const size_t pos = name.rfind('/');
-        if (pos == std::string::npos) {
-            continue;
-        }
-
-        name = name.substr(pos + 1);
+        const auto name = exe_name.substr(pos + 1);
         if (name == process_name) {
-            closedir(dir);
-            return std::stoi(entry->d_name);
+            return std::stoi(filename);
         }
     }
-    closedir(dir);
+
     return std::nullopt;
 }
 
 bool validate_pid(int pid) {
-    return access(("/proc/" + std::to_string(pid)).c_str(), F_OK) != -1;
+    return access(("/proc/" + std::to_string(pid)).c_str(), F_OK) == 0;
 }
 
 std::optional<ProcessHandle> open_process(int pid) {
