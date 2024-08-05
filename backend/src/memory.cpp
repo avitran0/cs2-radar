@@ -6,6 +6,7 @@
 #include <unistd.h>
 
 #include <algorithm>
+#include <filesystem>
 #include <iostream>
 #include <optional>
 #include <string>
@@ -21,6 +22,20 @@ std::optional<int> get_pid(std::string process_name) {
     }
 
     dirent *entry;
+    /*for (const auto &entry : std::filesystem::directory_iterator("/proc")) {
+        if (!entry.is_directory()) {
+            continue;
+        }
+
+        const auto exe_path =
+            "/proc/" + entry.path().filename().string() + "/exe";
+        const auto exe_name = std::filesystem::read_symlink(exe_path).string();
+        const auto pos = exe_name.rfind('/');
+        // rfind returns npos on fail
+        if (pos == std::string::npos) {
+            continue;
+        }
+    }*/
     while ((entry = readdir(dir))) {
         if (entry->d_type != DT_DIR) {
             continue;
