@@ -154,6 +154,12 @@ function wsMessage(event) {
         return;
     }
     const active_player = data.find((player) => player.active_player);
+    if (!active_player) {
+        // reset to default radar layer
+        setMapImage(getRadarName());
+        return;
+    }
+
     let active_player_layer = MapLayers.Default;
     // switch to lower radar layer if player is below threshold
     if (map.lowerThreshold && active_player.position.z < map.lowerThreshold) {
@@ -232,7 +238,7 @@ function getPlayerElement(player) {
     data.appendChild(money);
 
     if (player.life_state !== 0) {
-        element.style.opacity = "0.75";
+        element.style.opacity = "0.5";
     }
 
     element.appendChild(data);

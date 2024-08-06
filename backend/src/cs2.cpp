@@ -23,21 +23,22 @@ bool all_offsets_found(const Offsets *offsets) {
 std::optional<Offsets> init(ProcessHandle *process) {
     Offsets offsets = {};
 
-    // get client lib base address
+    // get library base addresses, will fail if game is not yet fully loaded
     const auto client_address =
         get_module_base_address(process->pid, CLIENT_LIB);
-    const auto engine_address =
-        get_module_base_address(process->pid, ENGINE_LIB);
-    const auto tier0_address = get_module_base_address(process->pid, TIER0_LIB);
-
     if (!client_address.has_value()) {
         log("failed to get %s base address", CLIENT_LIB);
         return std::nullopt;
     }
+
+    const auto engine_address =
+        get_module_base_address(process->pid, ENGINE_LIB);
     if (!engine_address.has_value()) {
         log("failed to get %s base address", ENGINE_LIB);
         return std::nullopt;
     }
+
+    const auto tier0_address = get_module_base_address(process->pid, TIER0_LIB);
     if (!tier0_address.has_value()) {
         log("failed to get %s base address", TIER0_LIB);
         return std::nullopt;
@@ -47,6 +48,7 @@ std::optional<Offsets> init(ProcessHandle *process) {
     offsets.libraries.engine = engine_address.value();
     offsets.libraries.tier0 = tier0_address.value();
 
+    // used for player interface offset
     const auto resource_offset = process->get_interface_offset(
         offsets.libraries.engine, "GameResourceServiceClientV0");
     if (!resource_offset.has_value()) {
@@ -91,6 +93,7 @@ std::optional<Offsets> init(ProcessHandle *process) {
     }
     offsets.interfaces.cvar = cvar_offset.value();
 
+    // crosshair alpha technically not needed, keep around for future
     offsets.convars.teammates_are_enemies =
         process->get_convar(offsets.interfaces.cvar, "mp_teammates_are_enemies")
             .value();

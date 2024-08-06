@@ -80,10 +80,15 @@ struct ObserverServicesOffsets {
 };
 
 struct Offsets {
+    // supporting offsets
+
     InterfaceOffsets interfaces;
     DirectOffsets direct;
     ConvarOffsets convars;
     LibraryOffsets libraries;
+
+    // used for in-game data
+
     PlayerControllerOffsets controller;
     PawnOffsets pawn;
     MoneyServicesOffsets money_services;
@@ -105,7 +110,7 @@ struct Player {
     bool active_player;
 };
 
-std::optional<Offsets> init(ProcessHandle* process);
-std::vector<Player> run(ProcessHandle* process, const Offsets* offsets);
+std::optional<Offsets> init(ProcessHandle *process);
+std::vector<Player> run(ProcessHandle *process, const Offsets *offsets);
 
 #endif
