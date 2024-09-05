@@ -23,8 +23,8 @@ std::string player_to_string(Player player) {
         "\"position\": {{\"x\": {}, \"y\": {}, \"z\": {}}},"
         "\"active_player\": {}"
         "}}",
-        player.name.c_str(), player.color, player.health, player.armor,
-        player.money, player.team, player.life_state, player.weapon.c_str(),
+        player.name, player.color, player.health, player.armor,
+        player.money, player.team, player.life_state, player.weapon,
         player.position.x, player.position.y, player.position.z,
         player.active_player);
 }

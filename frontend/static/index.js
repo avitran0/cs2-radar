@@ -137,7 +137,7 @@ function wsMessage(event) {
      * @type {{name: string, color: number, health: number, armor: number, team: number,
      * life_state: number, weapon: string, total_hits: number,
      * position: {x: number, y: number, z: number},
-     * active_player: boolean, local_player: boolean}[]}
+     * active_player: boolean}[]}
      */
     let data;
     try {
@@ -153,6 +153,7 @@ function wsMessage(event) {
     if (data.length === 0 || !active) {
         return;
     }
+    console.log(data);
     const active_player = data.find((player) => player.active_player);
     if (!active_player) {
         // reset to default radar layer
@@ -261,7 +262,7 @@ function getPlayerElement(player) {
     element.appendChild(weaponContainer);
 
     element.style.borderColor = Colors[player.color] ?? "var(--color-text)";
-    if (player.local_player) {
+    if (player.active_player) {
         element.style.backgroundColor = "var(--color-highlight)";
     }
 
