@@ -1,1 +1,1 @@
-# NEW VERSION [HERE](github.com/avitran0/radar)
+# NEW VERSION [HERE](https://github.com/avitran0/radar)
