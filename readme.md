@@ -1,6 +1,6 @@
-# CS2 Radar
+# Linux CS2 Radar
 
-this is a web-based radar for counter-strike 2
+this is a web-based, linux-only radar for counter-strike 2
 
 ## Setup
 
