@@ -1,7 +1,5 @@
 #!/bin/bash
-cd backend
-./build.sh
-cd ..
-cp backend/build/cs2-radar ./frontend/static
-cd frontend
-npm run start
+
+cargo build --release >/dev/null 2>&1
+npm install >/dev/null 2>&1
+npx tsx index.ts

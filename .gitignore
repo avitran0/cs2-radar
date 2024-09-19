@@ -1,9 +1,2 @@
-# user stuff
-.vscode
-.idea
-
-# build files
-build
-backend/build
-frontend/node_modules
-frontend/static/cs2-radar
+/target
+/node_modules

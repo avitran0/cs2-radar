@@ -1,8 +1,0 @@
----
-BasedOnStyle: Google
-AccessModifierOffset: -2
-DerivePointerAlignment: false
-IndentWidth: 4
-InsertNewlineAtEOF: true
-PointerAlignment: Right
----
