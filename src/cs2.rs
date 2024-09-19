@@ -1,9 +1,6 @@
-use std::os::unix::fs::FileExt;
-
 use serde::Serialize;
 
 use crate::{
-    config::NOFLASH,
     constants::{
         CLIENT_LIB, ENGINE_LIB, ENTITY_OFFSET, TEAM_CT, TEAM_T, TIER0_LIB, WEAPON_UNKNOWN,
     },
@@ -202,12 +199,6 @@ pub fn find_offsets(process: &ProcessHandle) -> Option<Offsets> {
                     continue;
                 }
                 offsets.pawn.item_services = read_u32_vec(&client_dump, i + 0x08) as u64;
-            }
-            "m_flFlashMaxAlpha" => {
-                if offsets.pawn.flash_max_alpha != 0 {
-                    continue;
-                }
-                offsets.pawn.flash_max_alpha = read_u32_vec(&client_dump, i + 0x10) as u64;
             }
             "m_hActiveWeapon" => {
                 if !network_enable || offsets.weapon_service.active_weapon != 0 {
@@ -493,14 +484,6 @@ pub fn get_player_info(process: &ProcessHandle, offsets: &Offsets) -> Vec<Player
             return vec![];
         }
     };
-
-    if NOFLASH {
-        // write 0.0 to m_flFlashMaxAlpha to completely get rid of the flash overlay
-        let _ = process.memory.write_at(
-            &0.0_f32.to_ne_bytes(),
-            local_pawn + offsets.pawn.flash_max_alpha,
-        );
-    }
 
     let mut local_player = match get_player(process, offsets, local_controller) {
         Some(player) => player,

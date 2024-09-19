@@ -55,8 +55,6 @@ pub struct PawnOffsets {
     pub weapon_services: u64,   // pointer -> WeaponServices (m_pWeaponServices)
     pub observer_services: u64, // pointer -> ObserverServices (m_pObserverServices)
     pub item_services: u64,     // pointer -> ItemServices (m_pItemServices)
-
-    pub flash_max_alpha: u64, // f32 (m_flFlashMaxAlpha)
 }
 
 impl PawnOffsets {
@@ -71,7 +69,6 @@ impl PawnOffsets {
             && self.weapon_services != 0
             && self.observer_services != 0
             && self.item_services != 0
-            && self.flash_max_alpha != 0
     }
 }
 
