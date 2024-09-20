@@ -9,7 +9,7 @@ this is a web-based, linux-only radar for counter-strike 2
 3. clone via git: `git clone github.com/avitran0/radar`
 4. change to correct directory: `cd radar`
 5. run with `./run.sh`
-6. access in a browser [here](https://avitrano.com/radar)
+6. access in a browser [here](https://avitrano.com/radar) (this only works on the same machine for now, because automatically generating non-self-signed certificates for https is not a nice process)
 
 ## Building your own interface
 
